@@ -29,18 +29,6 @@ void putchar(char ch) {
     call_sbi(ch, 0, 0, 0, 0, 0, 0, 1);  // Call SBI to output the character
 }
 
-// Main function of the kernel
-void kernel_main(void) {
-    // Zero out the BSS section
-    memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
-    
-    // Set up the trap handler
-    WRITE_CSR(stvec, (uint32_t) kernel_entry); 
-
-    // Trigger an illegal instruction trap
-    __asm__ __volatile__("unimp"); 
-}
-
 __attribute__((naked))     // No compiler-generated prologue/epilogue code
 __attribute__((aligned(4))) // Ensure function is 4-byte aligned in memory
 void kernel_entry(void) {
@@ -105,6 +93,19 @@ void kernel_entry(void) {
         "sret\n"                // Return from supervisor mode trap
     );
 }
+
+// Main function of the kernel
+void kernel_main(void) {
+    // Zero out the BSS section
+    memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
+
+    // Set up the trap handler
+    WRITE_CSR(stvec, (uint32_t) kernel_entry); 
+
+    // Trigger an illegal instruction trap
+    __asm__ __volatile__("unimp"); 
+}
+
 
 void handle_trap(struct trap_frame *f) {
     uint32_t scause = READ_CSR(scause);   // Read the cause of the trap
