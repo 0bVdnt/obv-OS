@@ -8,6 +8,7 @@ This project demonstrates a simple kernel written in C for a RISC-V architecture
 - `kernel.ld`: Linker script defining the memory layout.
 - `run.sh`: Script to build and run the kernel using QEMU.
 - `kernel.elf`: The compiled kernel binary (generated after running `run.sh`).
+- `opensbi-riscv32-generic-fw_dynamic.bin`: Firmware binary file provided by OpenSBI.
 
 ## Prerequisites
 
