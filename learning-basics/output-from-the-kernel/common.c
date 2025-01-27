@@ -57,7 +57,8 @@ void printf(const char* fmt, ...) {
                     putchar(*fmt);
                     break;
             }
-        } else { // Output regular characters
+        }
+        else { // Output regular characters
             putchar(*fmt);
         }
         fmt++; // Move to the next character in the format string
