@@ -68,7 +68,6 @@ void boot(void) {
         : [stack_top] "r" (__stack_top)  // Input operand
     );
 }
-
 // After preparing the arguments, the ecall instruction is executed in inline assembly.
 // When this is called, the CPU's execution mode switches from kernel mode (S-Mode) to 
 // OpenSBI mode (M-Mode), and OpenSBI's processing handler is invoked. Once it's done, 
