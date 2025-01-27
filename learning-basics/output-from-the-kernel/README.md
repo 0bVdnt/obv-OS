@@ -21,14 +21,14 @@ Ensure you have the following tools installed:
 
 - **QEMU**: A generic and open-source machine emulator and virtualizer.
 - **Clang**: A compiler for the C language family.
-- **llvm**: 
+- **LLVM tools**: (`llvm-nm`, `llvm-objdump`)
 ## Building the Kernel
 
 To build the kernel, execute the `run.sh` script. This script compiles the kernel source files and links them into an ELF executable.
 The script uses Clang with specific flags to target the RISC-V architecture and produce a freestanding binary without standard libraries.
 
 
-```bash
+```sh
   ./run.sh
 ```
 ## Running the Kernel
@@ -51,9 +51,9 @@ The boot process is initiated by the `boot` function, which sets up the stack an
 
 The `.bss` section is initialized to zero in `kernel_main` using a custom `memset` function. This ensures all uninitialized global variables are set to zero.
 
-### I/O Operations
+### O/P Operations
 
-The kernel uses the SBI to perform I/O operations. The `putchar` function outputs characters, and a custom `printf` function formats and outputs strings and numbers.
+The kernel uses the SBI to perform O/P operations. The `putchar` function outputs characters, and a custom `printf` function formats and outputs strings and numbers.
 
 ### Linker Script
 
