@@ -104,6 +104,39 @@ scause, stval, user_pc);
   - `__bss_end`: End of BSS section
   - `__stack_top`: Top of kernel stack
 
+## Running Instructions
+
+### Prerequisites
+- RISC-V GNU Toolchain
+- QEMU RISC-V Emulator
+- OpenSBI Firmware
+
+### Run the exception handler
+```bash
+$ ./run.sh
+```
+
+Expected output:
+```
+...
+PANIC: kernel.c:XX: unexpected trap scause=00000002, stval=00000000, sepc=XXXXXXXX
+```
+This indicates successful trap handling of the test illegal instruction.
+
+### Debugging
+To run with `llvm-addr2line`:
+```bash
+# Terminal 1: Start QEMU
+$ ./ run.sh
+
+# Terminal 2: Use the command below check the location where the value of the sepc=XXXXXXXX points to
+$ llvm-addr2line -e kernel.elf XXXXXXXX
+```
+### Expected result:
+```bash 
+# Here the kernel.c:XXX should point to the line where the exception has occured. 
+/Users/.../kernel.c:XXX
+```
 ## Notes
 
 - Current implementation is minimal - only reports and halts
