@@ -60,23 +60,23 @@ void putchar(char ch);
 void kernel_main(void);
 
 // Macro for system panic - prints error and halts
-#define PANIC(fmt, ...)                                                        \
-    do {                                                                       \
-        printf("PANIC: %s:%d: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
-        while (1) {}                                                          \
+#define PANIC(fmt, ...)                                                         \
+    do {                                                                        \
+        printf("PANIC: %s:%d: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);   \
+        while (1) {}                                                            \
     } while (0)
 
 // Macro to read from a Control and Status Register (CSR)
-#define READ_CSR(reg)                                                         \
-    ({                                                                        \
-        unsigned long __tmp;                                                  \
-        __asm__ __volatile__("csrr %0, " #reg : "=r"(__tmp));               \
-        __tmp;                                                               \
+#define READ_CSR(reg)                                                           \
+    ({                                                                          \
+        unsigned long __tmp;                                                    \
+        __asm__ __volatile__("csrr %0, " #reg : "=r"(__tmp));                   \
+        __tmp;                                                                  \
     })
 
 // Macro to write to a Control and Status Register (CSR)
-#define WRITE_CSR(reg, value)                                                \
-    do {                                                                     \
-        uint32_t __tmp = (value);                                           \
-        __asm__ __volatile__("csrw " #reg ", %0" ::"r"(__tmp));            \
+#define WRITE_CSR(reg, value)                                                   \
+    do {                                                                        \
+        uint32_t __tmp = (value);                                               \
+        __asm__ __volatile__("csrw " #reg ", %0" ::"r"(__tmp));                 \
     } while (0)
