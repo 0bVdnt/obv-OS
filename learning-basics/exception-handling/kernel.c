@@ -33,7 +33,7 @@ void putchar(char ch) {
 void kernel_main(void) {
     // Zero out the BSS section
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
-
+    
     // Set up the trap handler
     WRITE_CSR(stvec, (uint32_t) kernel_entry); 
 
