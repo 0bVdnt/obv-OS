@@ -104,6 +104,14 @@ void kernel_entry(void) {
     );
 }
 
+void handle_trap(struct trap_frame *f) {
+    uint32_t scause = READ_CSR(scause);
+    uint32_t stval = READ_CSR(stval);
+    uint32_t user_pc = READ_CSR(sepc);
+
+    PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+}
+
 // Boot function to set up the stack and jump to kernel_main
 __attribute__((section(".text.boot")))  // Place in the .text.boot section
 __attribute__((naked))  // No prologue/epilogue
