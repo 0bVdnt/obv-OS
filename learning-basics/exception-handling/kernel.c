@@ -31,12 +31,14 @@ void putchar(char ch) {
 
 // Main function of the kernel
 void kernel_main(void) {
-    // Clear the BSS section
+    // Zero out the BSS section
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
-    // Trigger a panic to indicate boot
-    PANIC("booted!");
-    // This line should never be reached
-    printf("unreachable here!\n");
+
+    // Set up the trap handler
+    WRITE_CSR(stvec, (uint32_t) kernel_entry); 
+
+    // Trigger an illegal instruction trap
+    __asm__ __volatile__("unimp"); 
 }
 
 __attribute__((naked))     // No compiler-generated prologue/epilogue code
