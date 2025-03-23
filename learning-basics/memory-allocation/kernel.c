@@ -54,7 +54,8 @@ void kernel_main(void) {
   paddr_t paddr1 = alloc_pages(3);                 // Allocate 3 more pages of memory
   printf("alloc_pages test: paddr0=%x\n", paddr0); // Print the address of first allocation
   printf("alloc_pages test: paddr1=%x\n", paddr1); // Print the address of second allocation
-
+  // He the expected difference between the two addresses is 5 * PAGE_SIZE i.e. 5 * 4096 i.e. 5 * 1000 in hexadec,
+  // so expected difference is address pointers is 5000
   PANIC("booted");                                 // Trigger kernel panic with "booted" message
 }
 
