@@ -50,8 +50,8 @@ void kernel_main(void) {
   // Clear the BSS section
   memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
 
-  paddr_t paddr0 = alloc_pages(2);
-  paddr_t paddr1 = alloc_pages(1);
+  paddr_t paddr0 = alloc_pages(5);
+  paddr_t paddr1 = alloc_pages(3);
   printf("alloc_pages test: paddr0=%x\n", paddr0);
   printf("alloc_pages test: paddr1=%x\n", paddr1);
 
