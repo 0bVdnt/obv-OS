@@ -44,12 +44,9 @@ void putchar(char ch) {
 
 // Main function of the kernel
 void kernel_main(void) {
-    printf("Hello World !\n");
+    printf("Hello from obv-OS!\n");
+    printf("Running on %s\n", "RISC-V.");    
     printf("1 + 2 = %d\n", 1 + 2);
-    printf("17 = %x\n", 17);
-    printf("Hello %s\n", "World");
-    printf("Hello %s\n", "c");
-    
     //Infinite loop to keep the kernel running
     for(;;) {
         __asm__ __volatile__("wfi");  // Wait for interrupt
