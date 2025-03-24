@@ -68,6 +68,16 @@ The code demonstrates:
   - Initializes process fields like PID and state.
   - Returns a pointer to the new process control block.
 
+### Delay Function (`delay`)
+- **Purpose:**  
+  Simulates computational work and slows down process execution for demonstration purposes.
+- **Implementation:**
+  - Executes a loop with 100 million iterations of no-operation (NOP) instructions.
+  - Creates a visible pause between character outputs ('A' and 'B') from each process.
+  - Prevents the terminal from becoming unresponsive by controlling the rate of output.
+  - Demonstrates how processes can yield control and resume execution.
+  - In a real-world OS, this would be replaced by actual computational work or sleep operations.
+
 ### Trap Handling (`kernel_entry` and `handle_trap`)
 - **Purpose:**  
   Manages interrupts and exceptions in the kernel.
@@ -111,6 +121,7 @@ This process will generate the `kernel.elf` executable and `kernel.map` file, th
 3. The `switch_context()` function saves the current process state and loads the next process state
 4. The context switch preserves callee-saved registers on the kernel stack
 5. Each process runs in an infinite loop, switching to the other process periodically
+6. The `delay()` function is called after each context switch to slow down execution, making the process switching visible to the user
 
 ### What to Expect During Execution
 When the system runs, it demonstrates basic multi-tasking by alternating between two processes. Each process has its own execution context and prints its identifier ('A' or 'B') to show when it's active.
@@ -134,6 +145,9 @@ This key sequence sends a special command to QEMU to terminate the emulator.
 - **Process Model:**  
   This implementation uses a very simple process model where each process runs in an infinite loop. In a more sophisticated system, processes could be scheduled based on priorities, time slices, or other criteria.
 
+- **Artificial Delays:**  
+  The `delay()` function is used as a simple mechanism to demonstrate process switching visually. It also serves a practical purpose by preventing the terminal from becoming unresponsive due to excessive output. In a production OS, this would be replaced by actual time-slicing mechanisms, scheduler algorithms, or process blocking on I/O or other resources.
+
 ### Future Enhancements
 
 Potential improvements to this basic implementation could include:
@@ -142,6 +156,7 @@ Potential improvements to this basic implementation could include:
 - Supporting proper process termination and resource cleanup
 - Adding inter-process communication mechanisms
 - Implementing user-mode process execution with protected memory
+- Replacing the artificial `delay()` with proper time-based scheduling
 
 ---
 The most important parts for understanding process control are:
@@ -150,3 +165,4 @@ The most important parts for understanding process control are:
 - `switch_context()` in `kernel.c` - Performs the context switch between processes
 - `create_process()` in `kernel.c` - Sets up a new process with its own stack
 - `proc_a_entry()` and `proc_b_entry()` - The entry points for the two processes
+- `delay()` in `kernel.c` - Simulates work to demonstrate process switching
