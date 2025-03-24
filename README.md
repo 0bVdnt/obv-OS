@@ -61,13 +61,3 @@ Hello from obv-OS!
 Running on RISC-V
 1 + 2 = 3
 ```
-
-## Contributing
-
-Contributions are welcome! If you'd like to contribute:
-
-1. Fork the repository
-2. Create a new branch for your feature
-3. Submit a Pull Request with a clear description of your changes
-
-Please ensure your code follows the existing style and includes appropriate documentation.
