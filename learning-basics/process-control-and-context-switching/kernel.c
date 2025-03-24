@@ -1,6 +1,9 @@
 #include "kernel.h" // Include kernel-specific definitions
 #include "common.h" // Include common utility definitions
 
+// RISC-V Process Control and Context Switching Implementation
+// This file demonstrates basic process management and context switching between processes
+
 // External symbols defined in the linker script (kernel.ld)
 // These symbols mark different memory regions
 extern char __bss[], __bss_end[], __stack_top[], __free_ram[], __free_ram_end[];

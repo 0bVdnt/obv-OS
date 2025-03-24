@@ -1,16 +1,17 @@
-# RISC-V Process Control Implementation
+# RISC-V Process Control and Context Switching
 
-This directory contains a basic implementation of process control and context switching for the RISC-V operating system (obv-OS). As part of the learning-basics series, this project demonstrates how multi-tasking can be implemented in a minimal kernel environment.
+This directory contains a basic implementation of process control and context switching for the RISC-V operating system (obv-OS). As part of the learning-basics series, this project demonstrates how multi-tasking is implemented through efficient process management and CPU context switching in a minimal kernel environment.
 
 ---
 
 ## Overview
 
 The code demonstrates:
-- Process Control Block (PCB) implementation
-- Context switching between processes
-- Kernel stack setup and management
-- Trap handling basics
+- Process Control Block (PCB) implementation for process tracking
+- Context switching mechanism between multiple processes
+- Kernel stack setup and management for each process
+- Register preservation during context switching
+- Trap handling for interrupt and exception management
 
 ---
 
@@ -52,12 +53,15 @@ The code demonstrates:
 
 ### Context Switching (`switch_context`)
 - **Overview:**  
-  Enables the kernel to switch execution between different processes.
+  Enables the kernel to switch execution between different processes - the core mechanism for multi-tasking.
 - **Details:**
-  - Saves callee-saved registers of the current process onto its stack.
-  - Updates the stack pointers for the processes.
-  - Restores callee-saved registers of the next process from its stack.
-  - Returns to continue execution in the context of the next process.
+  - Implemented in assembly to directly manipulate CPU registers and stack pointers
+  - Saves callee-saved registers (ra, s0-s11) of the current process onto its stack
+  - Updates the stack pointers for both processes (storing current SP and loading next SP)
+  - Restores callee-saved registers of the next process from its stack
+  - Returns to continue execution in the context of the next process
+  - Handles only callee-saved registers because caller-saved registers are already preserved by the calling convention
+  - CPU resumes execution in the next process exactly where it left off previously
 
 ### Process Creation (`create_process`)
 - **Role:**  
@@ -116,11 +120,15 @@ This process will generate the `kernel.elf` executable and `kernel.map` file, th
 
 ## How It Works
 
-1. The system initializes in `kernel_main()` and sets up two processes
-2. Each process has its own kernel stack and Process Control Block
-3. The `switch_context()` function saves the current process state and loads the next process state
-4. The context switch preserves callee-saved registers on the kernel stack
-5. Each process runs in an infinite loop, switching to the other process periodically
+1. The system initializes in `kernel_main()` and sets up two processes with their own PCBs
+2. Each process has its own kernel stack and execution context stored in its Process Control Block
+3. The `switch_context()` function performs the actual context switch between processes:
+   - Saves all callee-saved registers of the current process onto its kernel stack
+   - Switches the stack pointer to the next process's stack
+   - Restores all callee-saved registers of the next process from its stack
+   - Returns control to the next process at the point it was last suspended
+4. The entire context switch is transparent to the running processes - they continue execution as if nothing happened
+5. Each process runs in an infinite loop, voluntarily yielding control through context switching
 6. The `delay()` function is called after each context switch to slow down execution, making the process switching visible to the user
 
 ### What to Expect During Execution
@@ -159,10 +167,13 @@ Potential improvements to this basic implementation could include:
 - Replacing the artificial `delay()` with proper time-based scheduling
 
 ---
-The most important parts for understanding process control are:
+## Key Components for Understanding
 
-- `struct process` in `kernel.h` - Defines the Process Control Block
-- `switch_context()` in `kernel.c` - Performs the context switch between processes
-- `create_process()` in `kernel.c` - Sets up a new process with its own stack
-- `proc_a_entry()` and `proc_b_entry()` - The entry points for the two processes
+The most important parts for understanding process control and context switching are:
+
+- `struct process` in `kernel.h` - Defines the Process Control Block for tracking process state
+- `switch_context()` in `kernel.c` - The core function that performs context switching between processes
+- `create_process()` in `kernel.c` - Sets up a new process with its own stack and initial context
+- `proc_a_entry()` and `proc_b_entry()` - The entry points for the two processes that demonstrate switching
 - `delay()` in `kernel.c` - Simulates work to demonstrate process switching
+- The trap handling code - Shows how to safely handle exceptions without corrupting process contexts

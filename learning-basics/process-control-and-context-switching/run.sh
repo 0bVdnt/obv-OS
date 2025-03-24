@@ -1,6 +1,8 @@
 #!/bin/bash
 set -xue
 
+# Build and run script for the RISC-V Process Control and Context Switching demo
+
 QEMU=qemu-system-riscv32
 
 # Path to clang and compiler flags

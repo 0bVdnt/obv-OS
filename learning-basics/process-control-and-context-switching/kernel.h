@@ -1,6 +1,9 @@
 #pragma once
 #include "common.h"
 
+// RISC-V Process Control and Context Switching Definitions
+// This header defines structures and macros for process management and CPU context switching
+
 // Process management constants
 #define PROCS_MAX 8
 
