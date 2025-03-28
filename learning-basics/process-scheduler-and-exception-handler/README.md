@@ -119,6 +119,34 @@ This will compile the project and launch the kernel in QEMU.
 
 ---
 
+## Expected Output
+
+When you run the kernel, you should see output similar to the following:
+
+```
+OpenSBI v1.2
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+  ...
+  Boot HART Base ISA        : rv32imafdcsu
+  Boot HART ISA Extensions  : none
+  ...
+
+starting process A
+Astarting process B
+BABABABABABABABABABABABA
+```
+
+The output shows:
+1. OpenSBI firmware initialization (abbreviated)
+2. Process scheduling demonstration with multiple processes
+
+Note: The actual output may vary slightly depending on your specific implementation and configuration.
+
+---
+
 ## Technical Implementation
 
 ### Process Scheduling
