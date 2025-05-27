@@ -7,21 +7,25 @@ This directory contains the implementation of virtual memory management using pa
 ## Overview
 
 The kernel implements:
+
 1. Virtual Memory Management
+
    - Two-level page tables (Sv32 mode)
    - Page allocation and mapping
    - Memory protection and isolation
 
 2. Process Management
+
    - Process creation and scheduling
    - Context switching
    - Process isolation through separate page tables
 
 3. System Interface
+
    - SBI (Supervisor Binary Interface) for hardware operations
    - Console output
    - Trap handling
-   
+
 4. Boot Process
    - Memory initialization
    - Process setup
@@ -30,21 +34,25 @@ The kernel implements:
 ## Theory
 
 ### Virtual Memory and Page Tables
-When a program accesses memory, the CPU translates the specified address (virtual address) into a 
-physical address. The table that maps virtual addresses to physical addresses is called a page 
-table. By switching page tables, the same virtual address can point to different physical 
-addresses, allowing:
+
+When a program accesses memory, the CPU translates the specified address (virtual address) into a
+physical address. The table that maps virtual addresses to physical addresses is called a page
+table. By switching page tables, the same virtual address can point to different physical addresses, allowing:
+
 - Isolation of memory spaces (virtual address spaces)
 - Separation of kernel and application memory areas
 - Enhanced system security
 
 ### RISC-V Sv32 Virtual Address Structure
+
 The 32-bit virtual address is divided into:
+
 - First-level page table index (VPN[1]): 10 bits
 - Second-level index (VPN[0]): 10 bits
 - Page offset: 12 bits
 
 Example virtual address breakdown:
+
 ```
 Virtual Address: 0x1000_0000
 VPN[1] (10 bits): 0x040
@@ -53,16 +61,19 @@ Offset (12 bits): 0x000
 ```
 
 This structure utilizes the principle of locality, allowing for:
+
 - Smaller page table sizes
 - More effective use of the Translation Lookaside Buffer (TLB)
 
 ### Page Table Structure
 
 The kernel uses a two-level page table structure:
+
 1. First-level page table (table1)
+
    - Contains entries pointing to second-level tables
    - Indexed by VPN[1]
-   - Maps 4MB regions (1024 * 4KB)
+   - Maps 4MB regions (1024 \* 4KB)
 
 2. Second-level page table (table0)
    - Contains actual page mappings
@@ -87,6 +98,7 @@ page-tables/
 ### Virtual Memory Management
 
 #### Page Table Flags
+
 ```c
 #define SATP_SV32 (1u << 31)  // Enable Sv32 paging mode
 #define PAGE_V    (1 << 0)    // Page table entry valid bit
@@ -97,6 +109,7 @@ page-tables/
 ```
 
 #### Process Control Block
+
 ```c
 struct process {
     int pid;                    // Process identifier
@@ -110,7 +123,9 @@ struct process {
 ### Page Table Structure
 
 #### Two-Level Page Table
+
 - First-level page table (table1)
+
   - Contains entries pointing to second-level tables
   - Indexed by VPN[1] (10 bits)
   - Maps 4MB regions
@@ -121,12 +136,14 @@ struct process {
   - Maps 4KB pages
 
 ### Virtual Address Structure
+
 ```
 32-bit Virtual Address:
 [VPN[1] (10 bits)][VPN[0] (10 bits)][Offset (12 bits)]
 ```
 
 Example:
+
 ```
 Virtual Address: 0x1000_0000
 VPN[1] (10 bits): 0x040
@@ -137,14 +154,18 @@ Offset (12 bits): 0x000
 ---
 
 ## Building and Running
+
 ### Prerequisites
+
 - RISC-V GNU Toolchain
 - QEMU RISC-V Emulator
 - OpenSBI Firmware
 - Clang compiler
 
 ### Building and Running
+
 1. **Make the run script executable:**
+
    ```bash
    chmod +x run.sh
    ```
@@ -153,8 +174,9 @@ Offset (12 bits): 0x000
    ```bash
    ./run.sh
    ```
-   
+
 The build script:
+
 1. Compiles the kernel with appropriate flags
 2. Links with the provided linker script
 3. Generates debug symbols and memory map
@@ -185,6 +207,7 @@ BABABABABABABABABABABABA
 ```
 
 The output shows:
+
 1. OpenSBI firmware initialization
 2. Process scheduling with page table switching
 3. Alternating process execution with memory isolation
@@ -194,33 +217,43 @@ The output shows:
 While the output appears similar to the previous program, the key difference is the implementation of virtual memory through page tables. You can verify this using QEMU's debug features:
 
 1. **Enable QEMU Monitor**:
+
    ```bash
    # Press Ctrl+A followed by C to enter QEMU monitor
    ```
 
 2. **Check Memory Mappings**:
+
    ```bash
    (qemu) info mem
    ```
+
    This will show the virtual-to-physical memory mappings, confirming that:
+
    - Each process has its own page table
    - Kernel space is identity mapped
    - User space is isolated
 
 3. **Examine Page Tables**:
+
    ```bash
    (qemu) xp /1024x 0x80253000
    ```
+
    This shows the actual page table entries, demonstrating:
+
    - Two-level page table structure
    - Page permissions and flags
    - Virtual-to-physical mappings
 
 4. **Monitor Page Faults**:
+
    ```bash
    (qemu) info registers
    ```
+
    Check `scause` and `stval` registers to see:
+
    - Page fault types
    - Faulting addresses
    - Translation lookaside buffer (TLB) behavior
@@ -232,6 +265,7 @@ While the output appears similar to the previous program, the key difference is 
    This shows that each process has its own isolated memory space.
 
 The key differences from the previous program are:
+
 - Memory access is now mediated through page tables
 - Each process has its own virtual address space
 - Memory protection is enforced at the hardware level
@@ -243,18 +277,21 @@ The key differences from the previous program are:
 ## Implementation Details
 
 ### Page Table Management
+
 1. Page table creation and initialization
 2. Virtual to physical address mapping
 3. Page permission management
 4. TLB invalidation
 
 ### Process Isolation
+
 1. Process-specific page tables
 2. Kernel space identity mapping
 3. User space isolation
 4. Memory protection enforcement
 
 ### SBI Integration
+
 1. System call interface
 2. Hardware abstraction
 3. Error handling
@@ -267,41 +304,47 @@ The key differences from the previous program are:
 ### Common Paging Issues and Solutions
 
 1. **Paging Mode Not Set**
+
    ```c
    // Incorrect - missing SATP_SV32
    "csrw satp, %[satp]\n"
-   
+
    // Correct
    "csrw satp, %[satp]\n"  // with SATP_SV32 | page_table
    ```
+
    Debug: Use `info mem` in QEMU monitor to check if paging is enabled
 
 2. **Using Physical Address Instead of Page Number**
+
    ```c
    // Incorrect - using physical address
    SATP_SV32 | ((uint32_t)next->page_table)
-   
+
    // Correct - using page number
    SATP_SV32 | ((uint32_t)next->page_table / PAGE_SIZE)
    ```
+
    Debug: Check QEMU logs for page faults and examine register values
 
 ### Debugging Tools
 
 1. **QEMU Monitor Commands**
+
    ```bash
    # View memory mappings
    (qemu) info mem
-   
+
    # Dump registers
    (qemu) info registers
-   
+
    # View page table contents
    (qemu) xp /1024x 0x80253000
    ```
 
 2. **QEMU Logging**
    Add these flags to run.sh for detailed logging:
+
    ```bash
    -d unimp,guest_errors,int,cpu_reset -D qemu.log
    ```
@@ -314,11 +357,13 @@ The key differences from the previous program are:
 ### Common Debugging Scenarios
 
 1. **Page Faults**
+
    - Check `scause` register for fault type
    - Examine `stval` for faulting address
    - Verify page table entries with `info mem`
 
 2. **TLB Issues**
+
    - Ensure proper `sfence.vma` instructions
    - Verify page table updates
    - Check alignment requirements
@@ -331,6 +376,7 @@ The key differences from the previous program are:
 ## Future Enhancements
 
 Potential improvements include:
+
 - Demand paging
 - Page swapping
 - Shared memory regions

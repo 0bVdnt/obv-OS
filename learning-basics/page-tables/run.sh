@@ -1,28 +1,28 @@
 #!/bin/bash
 # Build and Run Script for RISC-V Kernel
-# 
+#
 # This script handles:
 # 1. Build Configuration
 #    - Compiler setup (Clang)
 #    - Compiler flags for RISC-V
 #    - Linker configuration
-# 
+#
 # 2. Kernel Building
 #    - Compiles kernel.c and common.c
 #    - Links with kernel.ld
 #    - Generates map file for debugging
-# 
+#
 # 3. QEMU Configuration
 #    - RISC-V 32-bit machine
 #    - VirtIO platform
 #    - Serial console setup
-# 
+#
 # 4. Debug Support
 #    - Generates debug symbols
 #    - Creates memory map
 #    - Enables QEMU monitor
 
-set -xue  # Enable strict error checking and command echoing
+set -xue # Enable strict error checking and command echoing
 
 # QEMU configuration for RISC-V 32-bit
 QEMU=qemu-system-riscv32
@@ -57,3 +57,8 @@ $CC $CFLAGS -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o kernel.elf \
 # -kernel kernel.elf: Load kernel binary
 $QEMU -machine virt -bios default -nographic -serial mon:stdio --no-reboot \
     -kernel kernel.elf
+
+# For debugging:
+# $QEMU -machine virt -bios default -nographic -serial mon:stdio --no-reboot \
+#     -d unimp,guest_errors,int,cpu_reset -D qemu.log\  # new!
+# -kernel kernel.elf
