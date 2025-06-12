@@ -25,8 +25,12 @@
  *    - I/O operations
  */
 
+// System call number for putchar (output character to console)
+// Used by user programs to request character output from the kernel.
+#define SYS_PUTCHAR 1
+
 // Basic Types
-typedef int bool;                    // Boolean type
+typedef int bool;                    // Boolean type (0 or 1)
 typedef unsigned char uint8_t;       // 8-bit unsigned integer
 typedef unsigned short uint16_t;     // 16-bit unsigned integer
 typedef unsigned int uint32_t;       // 32-bit unsigned integer
@@ -40,18 +44,14 @@ typedef uint32_t vaddr_t;            // Virtual address type
 #define true 1           // Boolean true value
 #define false 0          // Boolean false value
 #define NULL ((void *)0) // Null pointer definition
-#define SYS_PUTCHAR 1
 
 // Compiler Built-ins
 // Memory alignment utilities
-#define align_up(value, align)                                                 \
-  __builtin_align_up(value, align) // Align value up to boundary
-#define is_aligned(value, align)                                               \
-  __builtin_is_aligned(value, align) // Check if value is aligned
-#define offsetof(type, member)                                                 \
-  __builtin_offsetof(type, member) // Get offset of struct member
+#define align_up(value, align) __builtin_align_up(value, align) // Align value up to boundary
+#define is_aligned(value, align) __builtin_is_aligned(value, align) // Check if value is aligned
+#define offsetof(type, member) __builtin_offsetof(type, member) // Get offset of struct member
 
-// Variable argument handling
+// Variable argument handling macros for printf and similar functions
 #define var_list __builtin_va_list   // Type for variable arguments
 #define var_start __builtin_va_start // Initialize variable arguments
 #define var_arg __builtin_va_arg     // Get next variable argument

@@ -1,14 +1,15 @@
 /*
- * NOTES:
- * - Now intentionally triggers a memory access fault to demonstrate user mode
- * isolation:
- *   *((volatile int *)0x80500000) = 0x69420;
- *   (This address is outside the user program's allowed range, so this should
- * cause a trap.)
+ * shell.c - Example user program demonstrating system call usage
  *
- * SYNTAX/CONCEPT NOTES:
- * - volatile: tells the compiler not to optimize away the memory access.
- * - Infinite loop: placeholder for a more complex shell or user program.
+ * This program prints a message using printf, which internally calls putchar.
+ * In 11-syscall, putchar is implemented as a system call (ECALL) to the kernel.
+ *
+ * Key syntax:
+ *   - printf("Hello World from shell!\n");
+ *     This triggers a series of putchar syscalls, each issuing an ECALL.
+ *
+ *   - #include "user.h"
+ *     Brings in the syscall interface and putchar declaration for user programs.
  */
 #include "user.h"
 

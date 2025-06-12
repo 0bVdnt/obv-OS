@@ -266,6 +266,14 @@ __attribute__((naked)) void switch_context(uint32_t *prev_sp,
                        "ret\n");
 }
 
+/*
+ * handle_syscall - Kernel-side system call dispatcher
+ * Called from handle_trap when a user process executes ECALL.
+ * - f: pointer to trap_frame containing register state at trap time
+ *
+ * Switches on the syscall number (in a3) and dispatches to the appropriate kernel service.
+ * Example: SYS_PUTCHAR prints a character to the console (argument in a0).
+ */
 void handle_syscall(struct trap_frame *f) {
   switch (f->a3) {
   case SYS_PUTCHAR:
@@ -275,10 +283,19 @@ void handle_syscall(struct trap_frame *f) {
     PANIC("unexpected syscall a3=%x\n", f->a3);
   }
 }
-// System Interface
-// Handle traps/exceptions
-// Currently just panics with trap information
-// This is where page faults and other exceptions would be handled
+
+/*
+ * handle_trap - Kernel trap/exception handler
+ * Handles system calls (ECALL) and other exceptions from user mode.
+ *
+ * Syntax:
+ *   scause: CSR register indicating the cause of the trap (e.g., SCAUSE_ECALL)
+ *   sepc:   CSR register holding the program counter at trap time
+ *   stval:  CSR register with additional trap info (e.g., faulting address)
+ *
+ * For ECALL, calls handle_syscall and advances sepc to avoid re-executing ECALL.
+ * For other traps, panics with diagnostic info.
+ */
 void handle_trap(struct trap_frame *f) {
   uint32_t scause = READ_CSR(scause); // Cause of the trap
   uint32_t stval = READ_CSR(stval);   // Trap value
@@ -286,12 +303,10 @@ void handle_trap(struct trap_frame *f) {
 
   if (scause == SCAUSE_ECALL) {
     handle_syscall(f);
-    user_pc += 4;
+    user_pc += 4; // Advance PC past ECALL
   } else {
-    PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval,
-          user_pc);
+    PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
   }
-
   WRITE_CSR(sepc, user_pc);
 }
 

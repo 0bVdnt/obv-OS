@@ -40,6 +40,20 @@ start(void) {
                        "call exit           \n" ::[stack_top] "r"(__stack_top));
 }
 
+/*
+ * System call interface for user programs
+ *
+ * syscall() issues an ECALL instruction to request a service from the kernel.
+ * - sysno: system call number (e.g., SYS_PUTCHAR)
+ * - arg0, arg1, arg2: arguments to the syscall (placed in a0, a1, a2)
+ *
+ * The ECALL instruction triggers a trap to the kernel, which handles the syscall.
+ * The return value from the kernel is returned in a0.
+ *
+ * Syntax explanation:
+ *   register int a0 __asm__("a0") = arg0; // Place arg0 in register a0
+ *   __asm__ __volatile__("ecall" ...);     // Inline assembly to trigger ECALL
+ */
 int syscall(int sysno, int arg0, int arg1, int arg2) {
   register int a0 __asm__("a0") = arg0;
   register int a1 __asm__("a1") = arg1;
@@ -54,4 +68,8 @@ int syscall(int sysno, int arg0, int arg1, int arg2) {
   return a0;
 }
 
+/*
+ * putchar - user-level function to print a character to the console
+ * This issues a SYS_PUTCHAR syscall to the kernel.
+ */
 void putchar(char ch) { syscall(SYS_PUTCHAR, ch, 0, 0); }

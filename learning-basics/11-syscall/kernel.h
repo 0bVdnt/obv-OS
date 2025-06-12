@@ -42,6 +42,10 @@
 
 #define SSTATUS_SPIE (1 << 5)
 
+/*
+ * SCAUSE_ECALL is the trap cause code for ECALL (system call) from user mode.
+ * Used by the kernel to distinguish syscalls from other exceptions/faults.
+ */
 #define SCAUSE_ECALL 8
 
 // Process Management
@@ -78,6 +82,13 @@
 
 // System Control
 // Trap handling structure - matches the register save order in kernel_entry
+/*
+ * Trap frame structure: holds all CPU registers at the time of a trap/exception.
+ * Used by the kernel to access syscall arguments and return values.
+ *
+ * Syntax:
+ *   __attribute__((packed)) ensures no padding between struct members.
+ */
 struct trap_frame {
   uint32_t ra; // Return address
   uint32_t gp; // Global pointer
@@ -123,7 +134,10 @@ struct process {
 };
 
 // System Interface
-// Return values from SBI (Supervisor Binary Interface) calls
+/*
+ * System call return value structure for SBI calls.
+ * Used for low-level hardware interface, not for user syscalls.
+ */
 struct ret_sbi {
   long err; // Error code from SBI call
   long val; // Return value from SBI call
