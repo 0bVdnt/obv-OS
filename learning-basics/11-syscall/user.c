@@ -22,12 +22,6 @@
 
 extern char __stack_top[];
 
-__attribute__((noreturn)) void
-exit(void) { // __attribute__((noreturn)) tells the compiler this function will
-             // not return.
-  for (;;)
-    ;
-}
 
 // __attribute__((section(".text.start"))) places this function in the
 // .text.start section.
@@ -36,8 +30,8 @@ exit(void) { // __attribute__((noreturn)) tells the compiler this function will
 __attribute__((section(".text.start"))) __attribute__((naked)) void
 start(void) {
   __asm__ __volatile__("mv sp, %[stack_top] \n"
-                       "call main           \n"
-                       "call exit           \n" ::[stack_top] "r"(__stack_top));
+    "call main           \n"
+    "call exit           \n" ::[stack_top] "r"(__stack_top));
 }
 
 /*
@@ -59,27 +53,27 @@ int syscall(int sysno, int arg0, int arg1, int arg2) {
   register int a1 __asm__("a1") = arg1;
   register int a2 __asm__("a2") = arg2;
   register int a3 __asm__("a3") = sysno;
-
+  
   __asm__ __volatile__("ecall"
-                       : "=r"(a0)
-                       : "r"(a0), "r"(a1), "r"(a2), "r"(a3)
-                       : "memory");
-
-  return a0;
-}
-
-/*
- * putchar - user-level function to print a character to the console
- *
- * Issues a SYS_PUTCHAR system call (ECALL) to the kernel.
- *   - The character to print is passed as the first argument (a0).
- *   - The kernel receives the request, performs the output (e.g., via SBI), and returns control to the user program.
- *
- * This ensures user programs cannot access hardware directly and must use the kernel for I/O.
- */
-void putchar(char ch) { syscall(SYS_PUTCHAR, ch, 0, 0); }
-
-/*
+    : "=r"(a0)
+    : "r"(a0), "r"(a1), "r"(a2), "r"(a3)
+    : "memory");
+    
+    return a0;
+  }
+  
+  /*
+  * putchar - user-level function to print a character to the console
+  *
+  * Issues a SYS_PUTCHAR system call (ECALL) to the kernel.
+  *   - The character to print is passed as the first argument (a0).
+  *   - The kernel receives the request, performs the output (e.g., via SBI), and returns control to the user program.
+  *
+  * This ensures user programs cannot access hardware directly and must use the kernel for I/O.
+  */
+ void putchar(char ch) { syscall(SYS_PUTCHAR, ch, 0, 0); }
+ 
+ /*
  * getchar - user-level function to input a character from the console
  *
  * Issues a SYS_GETCHAR system call (ECALL) to the kernel.
@@ -92,3 +86,21 @@ void putchar(char ch) { syscall(SYS_PUTCHAR, ch, 0, 0); }
  *   char c = getchar(); // reads a character from the console via a syscall
  */
 int getchar(void) { return syscall(SYS_GETCHAR, 0, 0, 0); }
+
+/*
+ * exit - user-level function to terminate the current process
+ *
+ * Issues a SYS_EXIT system call (ECALL) to the kernel.
+ *   - No arguments are needed.
+ *   - The kernel marks the process as exited and schedules another process.
+ *
+ * This is the standard way for a user program to terminate itself in a controlled manner.
+ *
+ * Example usage:
+ *   exit(); // terminates the current process via a syscall
+ */
+__attribute__((noreturn)) void
+exit(void) { // __attribute__((noreturn)) tells the compiler this function will not return.
+  syscall(SYS_EXIT, 0, 0, 0);
+  for (;;); // Should be generally unreachable.
+}

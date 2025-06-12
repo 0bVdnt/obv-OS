@@ -30,6 +30,8 @@
 #define SYS_PUTCHAR 1
 // System call number for getchar (input character from console)
 #define SYS_GETCHAR 2
+// System call number for exit (terminates the current process)
+#define SYS_EXIT 3
 
 // Basic Types
 typedef int bool;                    // Boolean type (0 or 1)

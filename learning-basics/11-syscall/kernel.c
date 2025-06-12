@@ -285,8 +285,13 @@ __attribute__((naked)) void switch_context(uint32_t *prev_sp,
  */
 void handle_syscall(struct trap_frame *f) {
   switch (f->a3) {
+  case SYS_EXIT:
+    printf("process %d exited\n", curr_proc->pid);
+    curr_proc->state = PROC_EXITED;
+    yeild();
+    PANIC("Unreachable code after exit syscall\n");
   case SYS_GETCHAR:
-    while (1) {
+  while (1) {
       long ch = getchar();
       if (ch >= 0) {
         f->a0 = ch;
@@ -322,7 +327,7 @@ void handle_trap(struct trap_frame *f) {
 
   if (scause == SCAUSE_ECALL) {
     handle_syscall(f);
-    user_pc += 4; // Advance PC past ECALL
+    user_pc += 4;
   } else {
     PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval,
           user_pc);

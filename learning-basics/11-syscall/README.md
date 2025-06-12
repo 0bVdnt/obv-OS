@@ -11,7 +11,7 @@ This section covers:
 1. **System Call Mechanism:** How user programs invoke kernel services using the ECALL instruction.
 2. **Trap Handling:** How the kernel distinguishes and handles system calls from other exceptions.
 3. **User/Kernel Interface:** The conventions for passing arguments and return values between user and kernel space.
-4. **Extending User Programs:** How user applications use syscalls for output and input (see new `putchar` and `getchar`).
+4. **Extending User Programs:** How user applications use syscalls for output, input, and process termination (see new `putchar`, `getchar`, and `exit`).
 
 ## Key Concepts & Implementation Details
 
@@ -19,24 +19,24 @@ This section covers:
 A system call (syscall) is a controlled entry point for user programs to request privileged operations from the kernel. In RISC-V, this is typically done using the `ecall` instruction, which triggers a trap to the kernel.
 
 ### New Features in This Section
-- **Syscall Numbering:** Each system call is assigned a unique number (e.g., `SYS_PUTCHAR`, `SYS_GETCHAR`).
+- **Syscall Numbering:** Each system call is assigned a unique number (e.g., `SYS_PUTCHAR`, `SYS_GETCHAR`, `SYS_EXIT`).
 - **User-Space Syscall Wrapper:** User programs call a `syscall` function, which sets up arguments and issues an `ecall`.
 - **Kernel Trap Handler:** The kernel's trap handler recognizes ECALLs from user mode, extracts syscall numbers and arguments, and dispatches to the appropriate kernel service.
 - **Return Values:** The kernel places the result of the syscall in a register, which is returned to the user program.
-- **Example Syscalls:** `putchar` and `getchar` are implemented as syscalls, allowing user programs to print characters and read input via the kernel.
+- **Example Syscalls:** `putchar`, `getchar`, and `exit` are implemented as syscalls, allowing user programs to print characters, read input, and terminate via the kernel.
 
 ### System Call Flow
-1. **User Program:** Calls a wrapper (e.g., `putchar`, `getchar`), which invokes the generic `syscall` function.
+1. **User Program:** Calls a wrapper (e.g., `putchar`, `getchar`, `exit`), which invokes the generic `syscall` function.
 2. **ECALL Instruction:** The `syscall` function sets up registers and executes `ecall`.
 3. **Trap to Kernel:** The CPU switches to supervisor mode, and the kernel's trap handler is invoked.
 4. **Syscall Dispatch:** The kernel identifies the syscall number and arguments, performs the requested service, and sets the return value.
-5. **Return to User:** The kernel resumes user mode, returning the result to the user program.
+5. **Return to User:** The kernel resumes user mode, returning the result to the user program (or, for `exit`, does not return).
 
 ### Files and Structure
 
 ```
 11-syscall/
-├── user.c          # User mode runtime library (syscall wrappers: putchar, getchar)
+├── user.c          # User mode runtime library (syscall wrappers: putchar, getchar, exit)
 ├── user.h          # User mode syscall definitions
 ├── shell.c         # Example user application using syscalls
 ├── user.ld         # Linker script for user programs
@@ -55,21 +55,23 @@ A system call (syscall) is a controlled entry point for user programs to request
 └── README.md       # This file
 ```
 
-## Example: User Output and Input via Syscall
+## Example: User Output, Input, and Exit via Syscall
 
-In `shell.c`, user output and input are now performed via syscalls:
+In `shell.c`, user output, input, and process termination are now performed via syscalls:
 ```c
-printf("A"); // Printf triggers a syscall to the kernel to print 'A' via putchar
+printf("A");      // Printf triggers a syscall to the kernel to print 'A' via putchar
 char c = getchar(); // Triggers a syscall to the kernel to read a character
+exit();             // Triggers a syscall to the kernel to terminate the process
 ```
 - The user program does **not** access hardware or kernel memory directly.
-- The kernel validates and performs the I/O, maintaining isolation and security.
+- The kernel validates and performs the I/O and process management, maintaining isolation and security.
 
 ## Trap and Syscall Handling in the Kernel
 - The kernel's trap handler (`handle_trap`) checks if the trap is an ECALL from user mode.
-- If so, it calls `handle_syscall`, which dispatches based on the syscall number (e.g., `SYS_PUTCHAR`, `SYS_GETCHAR`).
+- If so, it calls `handle_syscall`, which dispatches based on the syscall number (e.g., `SYS_PUTCHAR`, `SYS_GETCHAR`, `SYS_EXIT`).
 - Arguments are passed via registers (e.g., `a0`, `a1`), and the return value is placed in `a0`.
-- The kernel then resumes user mode execution.
+- For `exit`, the kernel marks the process as exited and schedules another process.
+- The kernel then resumes user mode execution (unless the process has exited).
 
 ## Extending the Syscall Interface
 - New syscalls can be added by defining new syscall numbers and implementing their handlers in the kernel.
@@ -90,18 +92,21 @@ To build and test the system call support:
     This will:
     * Build the kernel and user application
     * Start QEMU automatically
-    * Run the user program, demonstrating system call-based output and input
+    * Run the user program, demonstrating system call-based output, input, and exit
 3. **Expected Output:**
     ```bash
     > hello
     Hello World form the shell!
     > foo
     unknown command: foo
-    > QEMU: Terminated
+    > exit
+    process 2 exited
+    PANIC: kernel.c:526: switched to idle process.
+    QEMU: Terminated
     ```
     #### Note: To exit QEMU, type `Ctrl-A` followed by `X`.
 4. **Inspecting Output:**
-    You can check the output of the user program in the terminal where you ran `run.sh`. The shell will respond to commands like `hello` and `foo`, demonstrating the syscall functionality. The shell will print "Hello World from the shell!" when the `hello` command is entered, and it will respond with "unknown command: foo" for any unrecognized command foo.
+    You can check the output of the user program in the terminal where you ran `run.sh`. The shell will respond to commands like `hello` and `foo`, demonstrating the syscall functionality. The shell will print "Hello World from the shell!" when the `hello` command is entered, and it will respond with "unknown command: foo" for any unrecognized command foo. In order to exit the shell, you can type `exit`, which will trigger the `exit` syscall, terminating the process and returning control to the kernel.
 5. **Debugging:**
     If you encounter issues, check the `kernel.map` and `shell.map` files for memory layout and ensure that the syscall numbers match between user and kernel code.
 

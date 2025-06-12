@@ -50,9 +50,9 @@
 
 // Process Management
 #define PROCS_MAX 8     // Maximum number of processes supported
+#define PROC_EXITED 2   // Process has exited
 #define PROC_UNUSED 0   // Process slot is free
 #define PROC_RUNNABLE 1 // Process is ready to run
-
 // System Interface
 // CSR (Control and Status Register) operations
 #define READ_CSR(reg)                                                          \
