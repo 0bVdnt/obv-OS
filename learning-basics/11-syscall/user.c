@@ -47,8 +47,8 @@ start(void) {
  * - sysno: system call number (e.g., SYS_PUTCHAR)
  * - arg0, arg1, arg2: arguments to the syscall (placed in a0, a1, a2)
  *
- * The ECALL instruction triggers a trap to the kernel, which handles the syscall.
- * The return value from the kernel is returned in a0.
+ * The ECALL instruction triggers a trap to the kernel, which handles the
+ * syscall. The return value from the kernel is returned in a0.
  *
  * Syntax explanation:
  *   register int a0 __asm__("a0") = arg0; // Place arg0 in register a0
@@ -70,6 +70,25 @@ int syscall(int sysno, int arg0, int arg1, int arg2) {
 
 /*
  * putchar - user-level function to print a character to the console
- * This issues a SYS_PUTCHAR syscall to the kernel.
+ *
+ * Issues a SYS_PUTCHAR system call (ECALL) to the kernel.
+ *   - The character to print is passed as the first argument (a0).
+ *   - The kernel receives the request, performs the output (e.g., via SBI), and returns control to the user program.
+ *
+ * This ensures user programs cannot access hardware directly and must use the kernel for I/O.
  */
 void putchar(char ch) { syscall(SYS_PUTCHAR, ch, 0, 0); }
+
+/*
+ * getchar - user-level function to input a character from the console
+ *
+ * Issues a SYS_GETCHAR system call (ECALL) to the kernel.
+ *   - No arguments are needed.
+ *   - The kernel waits for input and returns the character in a0.
+ *
+ * This allows user programs to read input in a safe, controlled way, with the kernel mediating all device access.
+ *
+ * Example usage:
+ *   char c = getchar(); // reads a character from the console via a syscall
+ */
+int getchar(void) { return syscall(SYS_GETCHAR, 0, 0, 0); }

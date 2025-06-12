@@ -137,6 +137,14 @@ struct ret_sbi call_sbi(long arg0, long arg1, long arg2, long arg3, long arg4,
 // Output a single character using SBI console
 void putchar(char ch) { call_sbi(ch, -1, 0, 0, 0, 0, 0, 1); }
 
+// Input a single character using SBI console
+long getchar() {
+  struct ret_sbi ret = call_sbi(0, 0, 0, 0, 0, 0, 0, 2);
+  return ret.err;
+}
+// NOTE: Technically SBI does not read from keyboard, but from the serial port
+// which in this case is connected to the keyboard (via QEMU's standard input).
+
 // Kernel entry point for handling traps/exceptions
 // This function is called when a trap occurs
 // It saves all registers and then calls handle_trap
@@ -271,11 +279,22 @@ __attribute__((naked)) void switch_context(uint32_t *prev_sp,
  * Called from handle_trap when a user process executes ECALL.
  * - f: pointer to trap_frame containing register state at trap time
  *
- * Switches on the syscall number (in a3) and dispatches to the appropriate kernel service.
- * Example: SYS_PUTCHAR prints a character to the console (argument in a0).
+ * Switches on the syscall number (in a3) and dispatches to the appropriate
+ * kernel service. Example: SYS_PUTCHAR prints a character to the console
+ * (argument in a0).
  */
 void handle_syscall(struct trap_frame *f) {
   switch (f->a3) {
+  case SYS_GETCHAR:
+    while (1) {
+      long ch = getchar();
+      if (ch >= 0) {
+        f->a0 = ch;
+        break;
+      }
+      yeild();
+    }
+    break;
   case SYS_PUTCHAR:
     putchar(f->a0);
     break;
@@ -293,8 +312,8 @@ void handle_syscall(struct trap_frame *f) {
  *   sepc:   CSR register holding the program counter at trap time
  *   stval:  CSR register with additional trap info (e.g., faulting address)
  *
- * For ECALL, calls handle_syscall and advances sepc to avoid re-executing ECALL.
- * For other traps, panics with diagnostic info.
+ * For ECALL, calls handle_syscall and advances sepc to avoid re-executing
+ * ECALL. For other traps, panics with diagnostic info.
  */
 void handle_trap(struct trap_frame *f) {
   uint32_t scause = READ_CSR(scause); // Cause of the trap
@@ -305,7 +324,8 @@ void handle_trap(struct trap_frame *f) {
     handle_syscall(f);
     user_pc += 4; // Advance PC past ECALL
   } else {
-    PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+    PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval,
+          user_pc);
   }
   WRITE_CSR(sepc, user_pc);
 }

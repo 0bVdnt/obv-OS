@@ -28,6 +28,8 @@
 // System call number for putchar (output character to console)
 // Used by user programs to request character output from the kernel.
 #define SYS_PUTCHAR 1
+// System call number for getchar (input character from console)
+#define SYS_GETCHAR 2
 
 // Basic Types
 typedef int bool;                    // Boolean type (0 or 1)
@@ -47,9 +49,12 @@ typedef uint32_t vaddr_t;            // Virtual address type
 
 // Compiler Built-ins
 // Memory alignment utilities
-#define align_up(value, align) __builtin_align_up(value, align) // Align value up to boundary
-#define is_aligned(value, align) __builtin_is_aligned(value, align) // Check if value is aligned
-#define offsetof(type, member) __builtin_offsetof(type, member) // Get offset of struct member
+#define align_up(value, align)                                                 \
+  __builtin_align_up(value, align) // Align value up to boundary
+#define is_aligned(value, align)                                               \
+  __builtin_is_aligned(value, align) // Check if value is aligned
+#define offsetof(type, member)                                                 \
+  __builtin_offsetof(type, member) // Get offset of struct member
 
 // Variable argument handling macros for printf and similar functions
 #define var_list __builtin_va_list   // Type for variable arguments
